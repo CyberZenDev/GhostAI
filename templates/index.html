@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ghost AI Chat</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.8/clipboard.min.js">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            position: relative;
+        }
+
+        h1 {
+            color: #4285F4;
+            margin-bottom: 20px;
+        }
+
+        #settings-container {
+            position: absolute;
+            top: 10px;
+            left: 10px; /* Move it to the top-right corner */
+            cursor: pointer;
+            color: #ffffff;
+            background-color: #4285F4;
+            border: none;
+            border-radius: 50%;
+            width: 40px; /* Set a fixed width */
+            height: 40px; /* Set a fixed height */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        #settings-container:hover {
+            background-color: #3367d6;
+        }
+
+        .settings-icon {
+            font-size: 24px;
+            margin: auto;
+        }
+
+        #chat-container {
+            background-color: #1E1E1E;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 800px;
+            width: 100%;
+            box-sizing: border-box;
+            overflow-y: auto;
+            margin-top: 40px;
+        }
+
+        #chat-display {
+            margin-bottom: 10px;
+        }
+
+        #user-input {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        #user-message {
+            width: calc(100% - 20px);
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            background-color: #2C2C2C;
+            color: #ffffff;
+            box-sizing: border-box;
+        }
+
+        #user-message::placeholder {
+            color: #aaaaaa;
+        }
+
+        #send-button {
+            width: calc(100% - 20px);
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #4285F4;
+            color: #ffffff;
+            cursor: pointer;
+            box-sizing: border-box;
+        }
+
+        #send-button:hover {
+            background-color: #3367d6;
+        }
+
+        .code-block {
+            background-color: #2C2C2C;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+            overflow-x: auto;
+        }
+
+        .copy-button {
+            background-color: #4285F4;
+            color: #ffffff;
+            padding: 5px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .copy-button:hover {
+            background-color: #3367d6;
+        }
+
+        .bold-text {
+            font-weight: bold;
+        }
+
+        @media only screen and (max-width: 600px) {
+            #settings-container {
+                top: 5px;
+                left: 5px;
+            }
+        }
+
+        .version-number {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            color: #aaaaaa;
+        }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <script>
+        function handleKeyPress(event) {
+            if (event.keyCode === 13) {
+                sendMessage();
+            }
+        }
+
+        function openSettings() {
+            window.location.href = "{{ url_for('settings') }}";
+        }
+
+        function parseFullStops(message) {
+            return message.replace(/(?<!\d\.)\.(?!$)/g, '.<br>');
+        }
+
+        function appendMessage(sender, message) {
+            var chatDisplay = document.getElementById('chat-display');
+            var messageElement = document.createElement('div');
+            messageElement.innerHTML = '<strong>' + sender + ':</strong> ' + parseBoldText(parseNumberedList(parseFullStops(message)));
+            chatDisplay.appendChild(messageElement);
+        }
+
+        function formatAndAppendMessage(sender, message) {
+            var chatDisplay = document.getElementById('chat-display');
+            var messageElement = document.createElement('div');
+
+            if (message.includes('You:') && message.includes('Ghost AI:')) {
+                messageElement.innerHTML = '<div class="explanation-block">' + parseFullStops(message) + '</div>';
+            } else if (message.includes('```python')) {
+                messageElement.innerHTML = '<strong>' + sender + ':</strong><div class="code-block">'
+                    + '<button class="copy-button" onclick="copyCode(this)">Copy</button>'
+                    + '<pre><code>' + extractCode(message) + '</code></pre></div>';
+            } else {
+                messageElement.innerHTML = '<strong>' + sender + ':</strong> ' + parseBoldText(parseNumberedList(parseFullStops(message)));
+            }
+
+            chatDisplay.appendChild(messageElement);
+        }
+
+        function parseExistingMessages() {
+            var chatDisplay = document.getElementById('chat-display');
+            var messages = chatDisplay.getElementsByTagName('div');
+            
+            for (var i = 0; i < messages.length; i++) {
+                var message = messages[i].innerText;
+                messages[i].innerHTML = parseFullStops(message);
+            }
+        }
+
+        function sendMessage() {
+            var userMessage = document.getElementById('user-message').value;
+            appendMessage('You', userMessage);
+            document.getElementById('user-message').value = '';
+
+            axios.post('/send_message', 'user_input=' + userMessage, {
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                }
+            })
+                .then(response => {
+                    var modelResponse = response.data.response;
+                    formatAndAppendMessage('Ghost AI', modelResponse);
+                    scrollToBottom();
+                })
+                .catch(error => {
+                    console.error('Error sending message:', error);
+                });
+        }
+
+        function extractCode(message) {
+            var match = /```python([\s\S]*?)```/.exec(message);
+            return match ? match[1].trim() : '';
+        }
+
+        function copyCode(button) {
+            var codeBlock = $(button).next().find('code');
+            var codeText = codeBlock.text();
+
+            navigator.clipboard.writeText(codeText)
+                .then(() => {
+                    button.innerText = 'Copied';
+                    setTimeout(() => {
+                        button.innerText = 'Copy';
+                    }, 1500);
+                })
+                .catch(err => {
+                    console.error('Unable to copy code to clipboard:', err);
+                });
+        }
+
+        function scrollToBottom() {
+            var chatDisplay = document.getElementById('chat-display');
+            chatDisplay.scrollTop = chatDisplay.scrollHeight;
+        }
+
+        function parseBoldText(message) {
+            return message.replace(/\*\*(.*?)\*\*/g, '<span class="bold-text">$1</span>');
+        }
+
+        function parseNumberedList(message) {
+            return message.replace(/(?:^|\n)(\d+\.)\s*(.*?)$/gm, '$1 $2 <br><br>');
+        }
+
+        parseExistingMessages();
+    </script>
+</head>
+
+<body onkeydown="handleKeyPress(event)">
+    <div id="settings-container" onclick="openSettings()">
+        <div class="settings-icon">&#9881;</div>
+    </div>
+
+    <h1>Ghost AI Chat</h1>
+
+    <div id="chat-container">
+        <div id="chat-display"></div>
+        <div id="user-input">
+            <input type="text" id="user-message" placeholder="Type your message...">
+            <button id="send-button" onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <div class="version-number">Version: v2.3.1</div>
+</body>
+
+</html>
