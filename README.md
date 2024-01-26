@@ -30,4 +30,4 @@ GhostAI is a versatile trainable model based on Google Gemini.
 
 ## Deploy to Cyclic
 
-[![Deploy to Cyclic](https://deploy.cyclic.sh/static/images/deploy-button.svg)](https://cyclic.sh/import?url=https://github.com/YourUsername/GhostAI)
+[![Deploy to Cyclic](https://deploy.cyclic.sh/button.svg)](https://deploy.cyclic.sh/)
