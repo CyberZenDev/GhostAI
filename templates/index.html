@@ -6,8 +6,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ghost AI Chat</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.8/clipboard.min.js">
-    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    
+
     <style>
         body {
             background-color: #121212;
@@ -129,6 +129,11 @@
             font-weight: bold;
         }
 
+        .explanation-block {
+            color: #aaaaaa;
+            margin-bottom: 10px;
+        }
+
         @media only screen and (max-width: 600px) {
             #settings-container {
                 top: 5px;
@@ -144,11 +149,10 @@
         }
     </style>
 
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-
     <script>
         function handleKeyPress(event) {
-            if (event.keyCode === 13) {
+            if (event.key === 'Enter') {
+                event.preventDefault(); // Prevents the default behavior of the Enter key (e.g., submitting forms)
                 sendMessage();
             }
         }
@@ -157,13 +161,14 @@
             window.location.href = "{{ url_for('settings') }}";
         }
 
-        function parseFullStops(message) {
-            return message.replace(/(?<!\d\.)\.(?!$)/g, '.<br>');
-        }
-
-        function appendMessage(sender, message) {
+        function appendMessage(sender, message, isAI = false) {
             var chatDisplay = document.getElementById('chat-display');
             var messageElement = document.createElement('div');
+
+            if (isAI) {
+                messageElement.classList.add('ai-response');
+            }
+
             messageElement.innerHTML = '<strong>' + sender + ':</strong> ' + parseBoldText(parseNumberedList(parseFullStops(message)));
             chatDisplay.appendChild(messageElement);
         }
@@ -183,17 +188,37 @@
             }
 
             chatDisplay.appendChild(messageElement);
+            scrollToBottom();
+        }
+
+        function formatAIResponse(message) {
+            // Add formatting to the AI responses for better readability
+            return message.replace(/(?:\r\n|\r|\n)/g, '<br>');
+        }
+
+        function appendAIResponse(message) {
+            var formattedMessage = formatAIResponse(message);
+            appendMessage('Ghost AI', formattedMessage, true);
+        }
+
+        function parseFullStops(text) {
+            text = text.replace('•', '  *');
+            return text;
         }
 
         function parseExistingMessages() {
             var chatDisplay = document.getElementById('chat-display');
-            var messages = chatDisplay.getElementsByTagName('div');
-            
-            for (var i = 0; i < messages.length; i++) {
-                var message = messages[i].innerText;
-                messages[i].innerHTML = parseFullStops(message);
+
+            if (chatDisplay) {
+                var messages = chatDisplay.getElementsByTagName('div');
+
+                for (var i = 0; i < messages.length; i++) {
+                    var message = messages[i].innerText;
+                    messages[i].innerHTML = parseFullStops(message);
+                }
             }
         }
+
 
         function sendMessage() {
             var userMessage = document.getElementById('user-message').value;
@@ -207,8 +232,7 @@
             })
                 .then(response => {
                     var modelResponse = response.data.response;
-                    formatAndAppendMessage('Ghost AI', modelResponse);
-                    scrollToBottom();
+                    appendAIResponse(modelResponse);
                 })
                 .catch(error => {
                     console.error('Error sending message:', error);
@@ -242,7 +266,7 @@
         }
 
         function parseBoldText(message) {
-            return message.replace(/\*\*(.*?)\*\*/g, '<span class="bold-text">$1</span>');
+            return message.replace(/\*\*(.*?)\*\*/g, '<br><span class="bold-text">$1</span><br>');
         }
 
         function parseNumberedList(message) {
@@ -261,7 +285,9 @@
     <h1>Ghost AI Chat</h1>
 
     <div id="chat-container">
-        <div id="chat-display"></div>
+        <div id="chat-display">
+            <!-- Previous messages will be inserted here -->
+        </div>
         <div id="user-input">
             <input type="text" id="user-message" placeholder="Type your message...">
             <button id="send-button" onclick="sendMessage()">Send</button>
@@ -269,6 +295,11 @@
     </div>
 
     <div class="version-number">Version: v2.3.1</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.8/clipboard.min.js"></script>
+    
 </body>
 
 </html>
