@@ -13,7 +13,8 @@ GhostAI is a versatile trainable model based on Google Gemini.
      ```
 
 2. **Update API Key:**
-   - Access the files and go to `api_key.py`.
+   - Access the files and go to `app.py`.
+   - Find the api_key_enc variablew
    - Change the API key to your own, obtainable at [Google Makersuite](https://makersuite.google.com/app/apikey).
 
 3. **Create and Train in Google Studio:**
@@ -22,11 +23,11 @@ GhostAI is a versatile trainable model based on Google Gemini.
 
 4. **Copy and Replace `convo` Variable:**
    - Click on Python and scroll down to find the `convo` variable.
-   - Copy the `convo` variable and head to `convo.py`. Replace the existing `convo` variable with your copied variable.
+   - Copy the `convo` variable and head to `training_data.py`. Replace the existing `convo` variable with your copied variable.
 
 5. **Deploy Your AI:**
    - Success! Your AI is now trained.
-   - Head over to [Cyclic.sh](https://cyclic.sh/) and deploy it!
+   - Head over to [Cyclic.sh](https://cyclic.sh/) or click the button below and deploy it!
 
 ## Deploy to Cyclic
 
