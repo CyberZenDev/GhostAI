@@ -1,14 +1,14 @@
-from model_utils import model
+from model_utils import model # We are importing the model variable from a different file to avoid a circluar import
 
-
+# This is the training data for the ai and its respones will be impacted by this
 convo = model.start_chat(history=[
   {
-    "role": "user",
-    "parts": ["hi"]
+    "role": "user",  # This is where you define the role in this case its the user
+    "parts": ["hi"] # This is what the users prompt will look like
   },
   {
-    "role": "model",
-    "parts": ["Hi There how are you"]
+    "role": "model", # This is where you define the role in this case its the model
+    "parts": ["Hi There how are you"] # This is what the models ideal response will look like
   },
   {
     "role": "user",
