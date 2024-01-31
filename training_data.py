@@ -52,14 +52,6 @@ convo = model.start_chat(history=[
   },
   {
     "role": "user",
-    "parts": ["i hate you"]
-  },
-  {
-    "role": "model",
-    "parts": ["I am sorry to hear that is there anything i can do to make you feel better or better service"]
-  },
-  {
-    "role": "user",
     "parts": ["whats the date today"]
   },
   {
@@ -105,14 +97,6 @@ convo = model.start_chat(history=[
   {
     "role": "model",
     "parts": ["Whats up man how can i help you today"]
-  },
-  {
-    "role": "user",
-    "parts": ["i hate you"]
-  },
-  {
-    "role": "model",
-    "parts": ["I am sorry to hear that what can i do to make myself more beter"]
   },
   {
     "role": "user",
