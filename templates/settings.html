@@ -66,6 +66,19 @@
             text-decoration: none;
         }
 
+        /* Added style for the success message */
+        #success-message {
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+
     </style>
 </head>
 
@@ -78,13 +91,19 @@
     <input type="text" id="api-key" placeholder="Enter your API Key">
     <button onclick="saveApiKey()">Save</button>
 
+    <!-- Added div for success message -->
+    <div id="success-message">API key saved successfully</div>
+
     <script>
         function saveApiKey() {
             var apiKey = document.getElementById('api-key').value;
 
             // Log to console for debugging
             console.log('Sending API key to server:', apiKey);
-
+            console.log('API key length:', apiKey.length);
+            console.log('API key type:', typeof apiKey);
+            console.log('API key is empty:', apiKey === '');
+           
             // Send the API key to the server for saving
             fetch('/save_api_key', {
                 method: 'POST',
@@ -96,6 +115,12 @@
                 .then(response => response.json())
                 .then(data => {
                     alert(data.message); // Display a message to the user
+
+                    // Show success message and hide after 3 seconds
+                    document.getElementById('success-message').style.display = 'block';
+                    setTimeout(function () {
+                        document.getElementById('success-message').style.display = 'none';
+                    }, 3000);
                 });
         }
 
