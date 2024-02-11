@@ -14,7 +14,7 @@ GhostAI is a versatile trainable model based on Google Gemini.
 
 2. **Update API Key:**
    - Access the files and go to `app.py`.
-   - Find the `ap_key_enc` variable
+   - Find the `api_key_enc` variable
    - Change the API key to your own, obtainable at [Google Makersuite](https://makersuite.google.com/app/apikey).
 
 3. **Create and Train in Google Studio:**
