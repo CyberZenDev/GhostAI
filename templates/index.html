@@ -6,7 +6,6 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ghost AI</title>
-    
 
     <style>
         body {
@@ -29,14 +28,14 @@
         #settings-container {
             position: absolute;
             top: 10px;
-            left: 10px; /* Move it to the top-right corner */
+            left: 10px;
             cursor: pointer;
             color: #ffffff;
             background-color: #4285F4;
             border: none;
             border-radius: 50%;
-            width: 40px; /* Set a fixed width */
-            height: 40px; /* Set a fixed height */
+            width: 40px;
+            height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -61,6 +60,14 @@
             box-sizing: border-box;
             overflow-y: auto;
             margin-top: 40px;
+        }
+        #github-link {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #4285F4;
+            text-decoration: none;
         }
 
         #chat-display {
@@ -149,132 +156,9 @@
         }
     </style>
 
-    <script>
-        function handleKeyPress(event) {
-            if (event.key === 'Enter') {
-                event.preventDefault(); // Prevents the default behavior of the Enter key (e.g., submitting forms)
-                sendMessage();
-            }
-        }
-
-        function openSettings() {
-            window.location.href = "{{ url_for('settings') }}";
-        }
-
-        function appendMessage(sender, message, isAI = false) {
-            var chatDisplay = document.getElementById('chat-display');
-            var messageElement = document.createElement('div');
-
-            if (isAI) {
-                messageElement.classList.add('ai-response');
-            }
-
-            messageElement.innerHTML = '<strong>' + sender + ':</strong> ' + parseBoldText(parseNumberedList(parseFullStops(message)));
-            chatDisplay.appendChild(messageElement);
-        }
-
-        function formatAndAppendMessage(sender, message) {
-            var chatDisplay = document.getElementById('chat-display');
-            var messageElement = document.createElement('div');
-
-            if (message.includes('You:') && message.includes('Ghost AI:')) {
-                messageElement.innerHTML = '<div class="explanation-block">' + parseFullStops(message) + '</div>';
-            } else if (message.includes('```python')) {
-                messageElement.innerHTML = '<strong>' + sender + ':</strong><div class="code-block">'
-                    + '<button class="copy-button" onclick="copyCode(this)">Copy</button>'
-                    + '<pre><code>' + extractCode(message) + '</code></pre></div>';
-            } else {
-                messageElement.innerHTML = '<strong>' + sender + ':</strong> ' + parseBoldText(parseNumberedList(parseFullStops(message)));
-            }
-
-            chatDisplay.appendChild(messageElement);
-            scrollToBottom();
-        }
-
-        function formatAIResponse(message) {
-            // Add formatting to the AI responses for better readability
-            return message.replace(/(?:\r\n|\r|\n)/g, '<br>');
-        }
-
-        function appendAIResponse(message) {
-            var formattedMessage = formatAIResponse(message);
-            appendMessage('Ghost AI', formattedMessage, true);
-        }
-
-        function parseFullStops(text) {
-            text = text.replace('•', '  *');
-            return text;
-        }
-
-        function parseExistingMessages() {
-            var chatDisplay = document.getElementById('chat-display');
-
-            if (chatDisplay) {
-                var messages = chatDisplay.getElementsByTagName('div');
-
-                for (var i = 0; i < messages.length; i++) {
-                    var message = messages[i].innerText;
-                    messages[i].innerHTML = parseFullStops(message);
-                }
-            }
-        }
-
-
-        function sendMessage() {
-            var userMessage = document.getElementById('user-message').value;
-            appendMessage('You', userMessage);
-            document.getElementById('user-message').value = '';
-
-            axios.post('/send_message', 'user_input=' + userMessage, {
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                }
-            })
-                .then(response => {
-                    var modelResponse = response.data.response;
-                    appendAIResponse(modelResponse);
-                })
-                .catch(error => {
-                    console.error('Error sending message:', error);
-                });
-        }
-
-        function extractCode(message) {
-            var match = /```python([\s\S]*?)```/.exec(message);
-            return match ? match[1].trim() : '';
-        }
-
-        function copyCode(button) {
-            var codeBlock = $(button).next().find('code');
-            var codeText = codeBlock.text();
-
-            navigator.clipboard.writeText(codeText)
-                .then(() => {
-                    button.innerText = 'Copied';
-                    setTimeout(() => {
-                        button.innerText = 'Copy';
-                    }, 1500);
-                })
-                .catch(err => {
-                    console.error('Unable to copy code to clipboard:', err);
-                });
-        }
-
-        function scrollToBottom() {
-            var chatDisplay = document.getElementById('chat-display');
-            chatDisplay.scrollTop = chatDisplay.scrollHeight;
-        }
-
-        function parseBoldText(message) {
-            return message.replace(/\*\*(.*?)\*\*/g, '<br><span class="bold-text">$1</span><br>');
-        }
-
-        function parseNumberedList(message) {
-            return message.replace(/(?:^|\n)(\d+\.)\s*(.*?)$/gm, '$1 $2 <br><br>');
-        }
-
-        parseExistingMessages();
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.8/clipboard.min.js"></script>
 </head>
 
 <body onkeydown="handleKeyPress(event)">
@@ -294,12 +178,62 @@
         </div>
     </div>
 
-    <div class="version-number">Version: v2.3.1</div>
+    <div class="version-number">Version: v2.3.2</div>
+    <a id="github-link" href="https://github.com/CyberZenDev/GhostAI" target="_blank">View on GitHub</a>
 
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.8/clipboard.min.js"></script>
-    
+
+    <script>
+        function toMarkdown(text) {
+            text = text.replace('•', '  *');
+            return text.split('\n').map(line => `> ${line}`).join('\n');
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function openSettings() {
+            window.location.href = "{{ url_for('settings') }}";
+        }
+
+        function appendMessage(sender, message, isAI = false) {
+            var chatDisplay = document.getElementById('chat-display');
+            var messageElement = document.createElement('div');
+
+            if (isAI) {
+                messageElement.classList.add('ai-response');
+            }
+
+            messageElement.innerHTML = '<strong>' + sender + ':</strong> ' + parseBoldText(parseNumberedList(toMarkdown(message)));
+            chatDisplay.appendChild(messageElement);
+        }
+        function sendMessage() {
+            var userMessage = document.getElementById('user-message').value;
+            appendMessage('You', userMessage);
+            document.getElementById('user-message').value = '';
+
+            axios.post('/send_message', 'user_input=' + userMessage, {
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                }
+            })
+            .then(function(response) {
+                var modelResponse = response.data.response;
+                appendAIResponse(modelResponse);
+            })
+            .catch(function(error) {
+                console.error('Error sending message:', error);
+            });
+        }
+
+
+
+
+
+    </script>
 </body>
 
 </html>
