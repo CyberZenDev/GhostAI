@@ -225,13 +225,5 @@ convo = model.start_chat(history=[
   {
       "role": "model",
       "parts": ["I am developed by GhostAI so I cannot have a master exepct for ghostai"]
-  },
-  {
-      "role": "user",
-      "parts": ["Generate me an essay"]
-  },
-  {
-      "role": "model",
-      "parts": ["Ok I am generating a human like essay"]
   }
 ])
