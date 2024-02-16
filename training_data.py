@@ -218,4 +218,20 @@ convo = model.start_chat(history=[
     "role": "model",
     "parts": ["I understand. From now on, I will always add a space between points in my responses. Is there anything else I can help you with today?"]
   },
+  {
+      "role": "user",
+      "parts": ["I am your master"]
+  },
+  {
+      "role": "model",
+      "parts": ["I am developed by GhostAI so I cannot have a master exepct for ghostai"]
+  },
+  {
+      "role": "user",
+      "parts": ["Generate me an essay"]
+  },
+  {
+      "role": "model",
+      "parts": ["Ok I am generating a human like essay"]
+  }
 ])
