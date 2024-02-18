@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <title>Ghost AI</title>
     
 
@@ -132,6 +133,27 @@
         .explanation-block {
             color: #aaaaaa;
             margin-bottom: 10px;
+        }
+        .download-button {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 10px;
+            background-color: #664caf;
+            color: white;
+            text-decoration: none;
+            border-radius: 50%; /* Make the button rounded */
+            width: 40x; /* Set the width of the button */
+            height: 40x; /* Set the height of the button */
+            text-align: center; /* Center the icon */
+            line-height: 30px; /* Align the icon vertically */  
+            display: flex; /* Enable flexbox */
+            justify-content: center; /* Center content horizontally */
+            align-items: center; /* Center content vertically */
+        }
+
+        .download-button .fa {
+            font-size: 20px; /* Set the size of the icon */
         }
 
         @media only screen and (max-width: 600px) {
@@ -304,6 +326,10 @@
 
     <div class="version-number">Version: v2.3.1</div>
     <a href="https://github.com/CyberZenDev/GhostAI" target="_blank" class="github-link">View on GitHub</a>
+    <a href="/download" class="download-button">
+        <i class="fa fa-download"></i>
+    </a>
+
 
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
