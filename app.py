@@ -5,8 +5,8 @@ from training_data import convo
 from model_utils import safety_settings_default
 import google.generativeai as genai
 import os
-
-enc_api_key = "AIzaSyABntLwQVD7Ql7GxSHJN1ZPyMpz2yyyFRg"
+ 
+enc_api_key = "AIzaSyABntLwQVD7Ql7GxSHJN1ZPyMpz2yyyFRg" # Replace with Your Own API Key
 genai.configure(api_key=enc_api_key)
 app = Flask(__name__)
 
