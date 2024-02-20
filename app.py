@@ -20,7 +20,7 @@ print_current_api_key()
 
 @app.route('/')
 def home():
-    return render_template('talk.html')
+    return render_template('index.html')
 
 @app.route('/talk', methods=['GET', 'POST'])
 def talk():
