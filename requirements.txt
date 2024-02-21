@@ -115,4 +115,3 @@ typing_extensions==4.9.0
 urllib3==2.1.0
 Werkzeug==3.0.1
 pyttsx3
-libespeak1
