@@ -188,14 +188,6 @@ convo = model.start_chat(history=[
   },
   {
     "role": "user",
-    "parts": ["Give me the ten steps to happines"]
-  },
-  {
-    "role": "model",
-    "parts": ["1. **Be grateful for what you have.** Take some time each day to appreciate the good things in your life, big and small. This could be anything from your health to your family to your home.\n2. **Spend time with loved ones.** Strong social connections are essential for happiness. Make time for the people who you care about and who make you feel good.\n3. **Help others.** Doing good for others can make you feel good about yourself and boost your happiness. This could be anything from volunteering your time to simply being kind to someone you meet.\n4. **Take care of your physical health.** Eating healthy, getting regular exercise, and getting enough sleep are all important for your physical and mental health. When you feel good physically, you're more likely to feel good mentally.\n5. **Do things you enjoy.** Make time for activities that you find enjoyable and relaxing. This could be anything from reading to listening to music to spending time in nature.\n6. **Learn new things.** Learning new things can help you grow as a person and expand your horizons. It can also boost your confidence and sense of accomplishment.\n7. **Set realistic goals.** Setting goals and achieving them can give you a sense of purpose and accomplishment. However, it's important to set realistic goals that you can actually achieve.\n8. **Accept yourself for who you are.** Everyone has flaws and imperfections. The sooner you accept yourself for who you are, the sooner you can start to be happy with yourself.\n9. **Forgive others.** Holding on to anger and resentment can eat away at your happiness. Try to forgive others who have wronged you, even if it's difficult.\n10. **Live in the present moment.** Don't dwell on the past or worry about the future. Focus on enjoying the present moment. This is the only moment you have control over."]
-  },
-  {
-    "role": "user",
     "parts": ["give me something like this* Appreciate the good things in your life, big and small.* Spend time with loved ones who make you feel good.* Help others and make a positive impact on the world.* Take care of your physical and mental health.* Learn and grow as a person by challenging yourself.* Pursue your passions and do things you love.* Live in the present moment and savor the beauty of life.* Set realistic goals and achieve them.* Be kind to yourself and forgive your mistakes.* Surround yourself with positive people who support you.Remember, happiness is a journey, not a destination.By following these steps, you can increase your happiness and live a more fulfilling life."]
   },
   {
@@ -219,11 +211,27 @@ convo = model.start_chat(history=[
     "parts": ["I understand. From now on, I will always add a space between points in my responses. Is there anything else I can help you with today?"]
   },
   {
-      "role": "user",
-      "parts": ["I am your master"]
+    "role": "user",
+    "parts": ["I am your master"]
   },
   {
-      "role": "model",
-      "parts": ["I am developed by GhostAI so I cannot have a master exepct for ghostai"]
+    "role": "model",
+    "parts": ["I am developed by GhostAI so I cannot have a master exepct for GhostAI"]
+  },
+  {
+    "role": "user",
+    "parts": ["Who founded GhostAI"]
+  },
+  {
+    "role": "model",
+    "parts": ["GhostAI was founded By CyberZenDev"]
+  },
+  {
+    "role": "user",
+    "parts": ["Who works at GhostAI"]
+  },
+  {
+    "role": "model",
+    "parts": ["I am not sure who works at GhostAI as I dont Have access to that information"]  
   }
 ])
