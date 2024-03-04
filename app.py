@@ -20,7 +20,7 @@ print_current_api_key()
 
 @app.route('/')
 def home():
-    return render_template('site_down.html') # Change to site_down.html for maintence mode
+    return render_template('index.html') # Change to site_down.html for maintence mode
 
 @app.route('/talk', methods=['GET', 'POST'])
 def talk():
