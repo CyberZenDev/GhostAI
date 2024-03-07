@@ -1,1 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generated Image</title>
+
+    <style>
+        body {
+            background-color: #000;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1, h2 {
+            color: #00f;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            max-width: 400px;
+            margin: auto;
+        }
+
+        label {
+            margin-bottom: 10px;
+        }
+
+        input, button {
+            padding: 10px;
+            margin-bottom: 10px;
+            border: none;
+            border-radius: 5px;
+        }
+
+        input {
+            background-color: #fff;
+            color: #000;
+        }
+
+        button {
+            background-color: #00f;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        #clearButton {
+            background-color: #000;
+            color: #fff;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+        }
+
+        #downloadButton {
+            background-color: #00f;
+            color: #fff;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Image Generation</h1>
+    
+    <!-- Form for user input -->
+    <form action="{{ url_for('generate_image') }}" method="post">
+        <label for="prompt">Enter Prompt:</label>
+        <input type="text" id="prompt" name="prompt" required>
+        <button type="submit" id="downloadButton">Generate Image</button>
+    </form>
+
+    <!-- Display the generated image if available -->
+    {% if media_link %}
+    <div>
+        <h2>Generated Image</h2>
+        <img src="{{ media_link }}" alt="Generated Image">
+        <a href="{{ media_link }}" download>
+            <button id="downloadButton">Download Image</button>
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Display error message if there's an issue -->
+    {% if error %}
+    <p>Error: {{ error }}</p>
+    {% endif %}
+
+    <!-- Clear button -->
+    <button id="clearButton">X</button>
+
+    <script>
+        // Add script for clearing the input
+        document.getElementById('clearButton').addEventListener('click', function() {
+            document.getElementById('prompt').value = '';
+        });
+    </script>
+</body>
+</html>
 
