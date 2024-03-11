@@ -28,20 +28,10 @@ app.config['MONGO_URI'] = mongo_url
 mongo = PyMongo(app)  # Move this line to the global scope
 client = MongoClient(mongo_url, server_api=ServerApi('1'))
 
-model = genai.GenerativeModel(model_name="gemini-1.0-pro",
-                              generation_config=generation_config,
-                              safety_settings=safety_settings_default)
 
-# Rest of your code...
 
-# Make sure to add these lines to ensure the mongo object is properly initialized
 with app.app_context():
     mongo.init_app(app)
-
-
-
-
-
 
 
 class User(UserMixin):
@@ -75,10 +65,7 @@ def load_user(user_id):
 app.config['API_KEY'] = "AIzaSyABntLwQVD7Ql7GxSHJN1ZPyMpz2yyyFRg"  # Replace with Your Own API Key
 app.config['SAFETY_SETTINGS'] = safety_settings_default
 
-def print_current_api_key():
-    print(f"Current API key: {app.config['API_KEY']}")
 
-print_current_api_key()
 
 @app.route('/')
 def home():
@@ -254,5 +241,4 @@ def img():
 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", debug=True, port=5001)
-    print_current_api_key()
+    app.run(host="0.0.0.0", debug=False, port=5000,lazy_loading=False)
