@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signup</title>
+    <style>
+        body {
+            background-color: #2c3e50; /* Dark background color */
+            color: #ecf0f1; /* Light text color */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* Center content vertically */
+            align-items: center; /* Center content horizontally */
+        }
+
+        h2 {
+            color: #3498db; /* Blue heading color */
+            margin-bottom: 20px;
+        }
+
+        form {
+            background-color: #34495e; /* Dark form background color */
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            margin-top: 20px; /* Add margin at the top */
+            width: 80%; /* Set the width to 80% of the screen */
+            max-width: 400px; /* Set a maximum width to maintain readability */
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #bdc3c7; /* Light label color */
+        }
+
+        input {
+            width: 100%;
+            padding: 15px; /* Increased padding for larger input container */
+            margin-bottom: 16px;
+            border: 1px solid #bdc3c7; /* Light border color */
+            border-radius: 5px;
+            background-color: #2c3e50; /* Dark input background color */
+            color: #ecf0f1; /* Light text color */
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #3498db; /* Blue button color */
+            color: #ecf0f1; /* Light text color */
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 16px; /* Add margin at the bottom of the button */
+        }
+
+        button:hover {
+            background-color: #2980b9; /* Darker blue on hover */
+        }
+
+        p {
+            color: #e74c3c; /* Red error text color */
+        }
+
+        .login-link {
+            color: #3498db; /* Blue color for the login link */
+            text-decoration: none;
+            margin-top: 10px;
+            display: inline-block;
+        }
+
+        .login-link:hover {
+            text-decoration: underline; /* Underline on hover */
+        }
+    </style>
+</head>
+<body>
+    <h2>Signup</h2>
+    <form method="post" action="{{ url_for('signup') }}">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+        <br>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+        <br>
+        <button type="submit">Signup</button>
+    </form>
+    
+    {% if error %}
+        <p>{{ error }}</p>
+    {% endif %}
+
+    <a class="login-link" href="{{ url_for('login') }}">Or login here</a>
+</body>
+</html>
