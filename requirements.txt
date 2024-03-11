@@ -109,10 +109,7 @@ pypiwin32==223
 PySocks==1.7.1
 python-dateutil==2.8.2
 pythonnet==3.0.3
-pyttsx3==2.90
 pywebview==4.4.1
-pywin32==306
-pywin32-ctypes==0.2.2
 PyYAML==6.0.1
 readme-renderer==42.0
 regex==2023.12.25
