@@ -23,6 +23,7 @@ genai.configure(api_key=api_key)
 app.config['API_KEY'] = api_key  # Set a global variable to assign API key
 app.config['SAFETY_SETTINGS'] = safety_settings_default  # Set the safety settings to the default ones
 app.secret_key = 'secret_key'
+app.lazy_loading = False
 mongo_url = 'mongodb+srv://ghostai:ghostai@ghostai.4bni5mt.mongodb.net/your_database_name?retryWrites=true&w=majority&appName=GhostAI'
 app.config['MONGO_URI'] = mongo_url
 mongo = PyMongo(app)  # Move this line to the global scope
@@ -241,4 +242,4 @@ def img():
 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", debug=False, port=5000,lazy_loading=False)
+    app.run(host="0.0.0.0", debug=False, port=5000)
