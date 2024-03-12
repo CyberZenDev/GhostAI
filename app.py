@@ -136,7 +136,7 @@ def login():
                 user_obj.pro = False
 
             login_user(user_obj)
-            return redirect(url_for('succes'))
+            return redirect(url_for('success'))
         else:
             return render_template('login.html', error='Incorrect Username Or Password', invalid_request=invalid_request + 1)
 
