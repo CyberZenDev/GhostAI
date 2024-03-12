@@ -183,7 +183,7 @@ def upgrade():
 
 
 # Protected img route
-"""
+
 @app.route('/img', methods=['GET', 'POST'])
 def generate_image():
     # Check if the user is authenticated and has "pro" status
@@ -233,11 +233,12 @@ def generate_image():
     else:
         # Handle non-pro user access (optional: redirect to a different page)
         return render_template('upgrade.html', error="You need to be a pro user to access this feature.")
-"""
 
+"""
 @app.route('/img', methods=['GET', 'POST'])
 def img():
     return render_template('page_work.html')
+"""
 
 
 
