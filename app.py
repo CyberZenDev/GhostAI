@@ -7,6 +7,7 @@ import google.generativeai as genai
 from flask_pymongo import PyMongo
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
+import requests
 
 api_key = "AIzaSyABntLwQVD7Ql7GxSHJN1ZPyMpz2yyyFRg"  # Define the API key; needs to be changed if you want to use it
 
