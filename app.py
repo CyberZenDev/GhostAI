@@ -113,7 +113,7 @@ def generate_response(user_input):
 
 
 @app.route('/success')
-def succes():
+def success():
     return render_template('success.html')
 
 # New login route
