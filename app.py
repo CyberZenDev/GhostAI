@@ -92,7 +92,6 @@ def save_api_key():
     if api_key != app.config['API_KEY']:
         app.config['API_KEY'] = api_key
         app.config['SAFETY_SETTINGS'] = safety_settings_default
-        print_current_api_key()
         return jsonify({'message': 'API Key saved successfully'})
     else:
         return jsonify({'message': 'Please enter a different API Key'})
