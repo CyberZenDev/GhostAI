@@ -112,9 +112,9 @@ def generate_response(user_input):
     return response
 
 
-@app.route('/succes')
+@app.route('/success')
 def succes():
-    return render_template('succes.html')
+    return render_template('success.html')
 
 # New login route
 @app.route('/login', methods=['POST', 'GET'])
