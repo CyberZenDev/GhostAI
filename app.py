@@ -109,6 +109,12 @@ def download_page():
 
 def generate_response(user_input):
     response = convo.send_message(user_input).text
+    print()
+    print()
+    print(f'User Input: {user_input}')
+    print(f'AI Response: {response}')
+    print()
+    print()
     return response
 
 
