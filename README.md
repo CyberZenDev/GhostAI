@@ -1,5 +1,9 @@
 # GhostAI - Versatile Trainable Model
 
+This is the last version of GhostAI To be supported on the web
+As we have now added image gen locally you can no longer use cyclic as a provider unless you are using the limewire api
+Check out the local project at : [GhostAI Server]https://github.com/The-UnknownHacker/GhostAI-Server
+
 GhostAI is a versatile trainable model based on Google Gemini.
 
 ## Training Your Own AI
