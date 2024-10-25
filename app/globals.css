@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* globals.css */
+
+/* Define CSS variables for light and dark themes */
+:root {
+    --background-color: #ffffff;
+    --text-color: #000000;
+  }
+  
+  .dark-mode {
+    --background-color: #121212;
+    --text-color: #ffffff;
+  }
+  
+  body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+  }
+  
+
+  /* Add these styles to your globals.css for the toggle */
+
+.dot {
+    transition: transform 0.2s ease-in-out; /* Smooth transition for the slider */
+  }
+  
+  /* Additional adjustments for the toggle switch */
+  label {
+    cursor: pointer;
+  }
+  
+  input:checked ~ .block {
+    background-color: #4caf50; /* Change the background when checked */
+  }
+  
