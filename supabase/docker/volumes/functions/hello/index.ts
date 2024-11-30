@@ -1,16 +1,10 @@
-// Follow this setup guide to integrate the Deno language server with your editor:
-// https://deno.land/manual/getting_started/setup_your_environment
-// This enables autocomplete, go to definition, etc.
+import { createServer } from "http";
 
-import { serve } from "https://deno.land/std@0.177.1/http/server.ts"
+const server = createServer((req, res) => {
+  res.writeHead(200, { "Content-Type": "application/json" });
+  res.end('"Hello from Edge Functions!"');
+});
 
-serve(async () => {
-  return new Response(
-    `"Hello from Edge Functions!"`,
-    { headers: { "Content-Type": "application/json" } },
-  )
-})
-
-// To invoke:
-// curl 'http://localhost:<KONG_HTTP_PORT>/functions/v1/hello' \
-//   --header 'Authorization: Bearer <anon/service_role API key>'
+server.listen(3000, () => {
+  console.log("Server running at http://localhost:3000/");
+});

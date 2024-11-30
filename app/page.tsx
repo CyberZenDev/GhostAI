@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Send, Trash2, Minimize2, Command, FileEdit, Origami, FolderPlus, Folder, History, LogOut, Edit } from "lucide-react";
+import { Send, Trash2, Minimize2, Command, FileEdit,FolderPlus, Folder, History, LogOut, Edit } from "lucide-react";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import {
@@ -160,7 +160,6 @@ const ChatInterface = ({
   isCommandOpen,
   setIsCommandOpen,
   handleQuickSubmit,
-  isMobile,
   isMobileDialogOpen,
   setIsMobileDialogOpen,
   updateChatMode,

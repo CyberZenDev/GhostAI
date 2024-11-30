@@ -1,4 +1,5 @@
 import { Groq } from "groq-sdk";
+import { ChatCompletionMessageParam } from "groq-sdk/resources/chat/completions.mjs";
 
 type GroqMessageParam = {
   role: "system" | "user" | "assistant";
@@ -51,12 +52,15 @@ export async function POST(request: Request) {
 
     // Create messages array with system prompt
     const contextMessages = [
-      { role: 'system', content: SYSTEM_PROMPTS[mode] },
-      ...recentMessages
+      { role: 'system', content: SYSTEM_PROMPTS[mode], name: 'system' },
+      ...recentMessages.map(message => ({
+        ...message,
+        name: message.role,
+      }))
     ];
 
     const completion = await groq.chat.completions.create({
-      messages: contextMessages,
+      messages: contextMessages as ChatCompletionMessageParam[],
       model: "mixtral-8x7b-32768",
       temperature: 0.7,
       max_tokens: 1024,
