@@ -834,13 +834,8 @@ export default function Home() {
       }
 
       if (data) {
-        // Parse messages from JSON if necessary
-        const chatMessages = JSON.parse(data.messages) as Array<{
-          role: 'user' | 'assistant';
-          content: string;
-        }>;
-
-        setMessages(chatMessages);
+        // No need to parse messages as they are already in the correct format
+        setMessages(data.messages);
         setMode(data.mode as ChatMode);
         setSelectedChatId(id);
       }
