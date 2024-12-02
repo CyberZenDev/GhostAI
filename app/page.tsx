@@ -763,10 +763,17 @@ export default function Home() {
   };
 
   const loadChatHistories = async () => {
+    if (!user || !user.id) {
+      console.error('User is not authenticated or user ID is missing');
+      toast.error('Please log in to view chat histories');
+      return;
+    }
+
     try {
       let query = supabase
         .from('chat_histories')
         .select('*')
+        .eq('user_id', user.id)
         .order('updated_at', { ascending: false });
 
       if (selectedCollectionId) {
@@ -781,7 +788,6 @@ export default function Home() {
         throw error;
       }
 
-      // Ensure each chat history has valid messages array
       const validatedHistories = data.map(history => ({
         ...history,
         messages: Array.isArray(history.messages) ? history.messages : []
@@ -924,6 +930,12 @@ export default function Home() {
     loadChatHistories();
   }, [selectedCollectionId]);
 
+  useEffect(() => {
+    if (user && user.id) {
+      loadChatHistories();
+    }
+  }, [user]);
+
   async function handleSubmit(e: React.FormEvent, submittedText?: string) {
     e.preventDefault();
     const textToSubmit = submittedText || input;
@@ -1017,6 +1029,7 @@ export default function Home() {
               messages: updatedMessages,
               mode,
               collection_id: selectedCollectionId,
+              user_id: user?.id
             },
           ])
           .select()
