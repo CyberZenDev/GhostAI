@@ -1,101 +1,94 @@
 import { Groq } from "groq-sdk";
 import { ChatCompletionMessageParam } from "groq-sdk/resources/chat/completions.mjs";
-
-type GroqMessageParam = {
-  role: "system" | "user" | "assistant";
-  content: string;
-};
+import { Message } from "@/app/types";
 
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
 
-type ChatMode = 'software' | 'notetaking' | 'research' | 'general' | 'image';
-
-const SYSTEM_PROMPTS: Record<ChatMode, string> = {
-  software: "You are an AI technical interviewer assistant...",
-  notetaking: "You are an AI note-taking assistant...",
-  research: "You are an AI research assistant...",
-  general: "You are a helpful AI assistant called GhostAI. If anyone asks you for your name, you say 'GhostAI'. You are a general purpose AI assistant that can help with a wide range of tasks. You need to reply in a style similar to the user's style.",
-  image: `You are an AI image generation assistant. Your role is to help create images using pollinations.ai.
-
-To generate an image, create a markdown image link in this format:
-
-![Image](https://image.pollinations.ai/prompt/{description}?width=1024&height=1024&nologo=poll&nofeed=yes&model=Flux&seed={random})
-
-Where:
-- {description} is the image description (URL encoded)
-- {random} is a random 5-digit number
-
-Always generate 2 variations of each image with different random seeds.
-Keep descriptions clear and detailed but not too long.
-URL encode all descriptions.
-After generating images, add: "If you'd like different variations, just ask!"`,
-};
+async function convertUrlToBase64(url: string): Promise<string> {
+  const response = await fetch(url);
+  const blob = await response.blob();
+  const buffer = await blob.arrayBuffer();
+  const base64 = Buffer.from(buffer).toString('base64');
+  const mimeType = blob.type;
+  return `data:${mimeType};base64,${base64}`;
+}
 
 export async function POST(request: Request) {
   try {
-    const { messages, mode = 'general' } = await request.json() as { 
-      messages: GroqMessageParam[]; 
-      mode: ChatMode;
-    };
+    const { messages } = await request.json();
+    const lastMessage = messages[messages.length - 1] as Message;
+    
+    // Format messages for Groq API
+    const contextMessages = await Promise.all(messages.map(async (msg: Message) => {
+      if (Array.isArray(msg.content)) {
+        // Convert image URLs to base64
+        const formattedContent = await Promise.all(msg.content.map(async (content) => {
+          if (content.type === 'image_url' && content.image_url?.url) {
+            const base64Url = await convertUrlToBase64(content.image_url.url);
+            return {
+              type: 'image_url',
+              image_url: {
+                url: base64Url,
+                detail: 'low'
+              }
+            };
+          }
+          return content;
+        }));
+        
+        return {
+          role: msg.role,
+          content: formattedContent
+        };
+      }
+      return {
+        role: msg.role,
+        content: msg.content
+      };
+    }));
 
-    if (!messages || !Array.isArray(messages) || messages.length === 0) {
-      return new Response(JSON.stringify({ error: 'Valid message history is required' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Get the last 4 messages from the chat history
-    const recentMessages = messages.slice(-4);
-
-    // Create messages array with system prompt
-    const contextMessages = [
-      { role: 'system', content: SYSTEM_PROMPTS[mode], name: 'system' },
-      ...recentMessages.map(message => ({
-        ...message,
-        name: message.role,
-      }))
-    ];
+    console.log('Sending to Groq:', JSON.stringify(contextMessages, null, 2));
 
     const completion = await groq.chat.completions.create({
-      messages: contextMessages as ChatCompletionMessageParam[],
-      model: "mixtral-8x7b-32768",
+      messages: contextMessages,
+      model: "llama-3.2-11b-vision-preview",
       temperature: 0.7,
-      max_tokens: 1024,
       stream: true,
+      max_tokens: 1024
     });
 
-    return new Response(
-      new ReadableStream({
-        async start(controller) {
-          try {
-            for await (const chunk of completion) {
-              const content = chunk.choices[0]?.delta?.content || '';
-              if (content) {
-                controller.enqueue(content);
-              }
-            }
-          } catch (error) {
-            console.error('Streaming error:', error);
-          } finally {
-            controller.close();
+    const stream = new ReadableStream({
+      async start(controller) {
+        try {
+          for await (const chunk of completion) {
+            const content = chunk.choices[0]?.delta?.content || '';
+            controller.enqueue(content);
           }
-        },
-      }),
-      {
-        headers: {
-          'Content-Type': 'text/plain',
-          'Transfer-Encoding': 'chunked',
-        },
+        } catch (error) {
+          console.error('Streaming error:', error);
+          controller.error(error);
+        } finally {
+          controller.close();
+        }
       }
-    );
-  } catch (error) {
-    console.error('Error:', error);
-    return new Response('Failed to process the request. Please try again later.', {
+    });
+
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/plain',
+        'Transfer-Encoding': 'chunked'
+      }
+    });
+  } catch (error: any) {
+    console.error('Groq API error:', error?.response?.data || error);
+    return new Response(JSON.stringify({
+      error: error.message || 'An error occurred',
+      details: error?.response?.data || error
+    }), {
       status: 500,
-      headers: { 'Content-Type': 'text/plain' },
+      headers: { 'Content-Type': 'application/json' }
     });
   }
 } 

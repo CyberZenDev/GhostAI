@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Send, Trash2, Minimize2, Command, FileEdit,FolderPlus, Folder, History, LogOut, Edit } from "lucide-react";
+import { Send, Trash2, Minimize2, Command, FileEdit,FolderPlus, Folder, History, LogOut, Edit, X } from "lucide-react";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import {
@@ -50,19 +50,13 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
 import { User } from '@supabase/supabase-js';
+import { ChatMode, Message, MessageContent } from "@/app/types";
 
 type CodeProps = {
   inline?: boolean;
   className?: string;
   children?: React.ReactNode;
 }
-
-type Message = {
-  role: 'user' | 'assistant';
-  content: string;
-};
-
-type ChatMode = 'software' | 'notetaking' | 'research' | 'general' | 'image';
 
 type SuggestedPrompt = {
   mode: ChatMode;
@@ -148,22 +142,7 @@ const CollectionSelect = ({
   </Select>
 );
 
-const ChatInterface = ({
-  messages,
-  setMessages,
-  isLoading,
-  input,
-  setInput,
-  handleSubmit,
-  messagesEndRef,
-  mode,
-  isCommandOpen,
-  setIsCommandOpen,
-  handleQuickSubmit,
-  isMobileDialogOpen,
-  setIsMobileDialogOpen,
-  updateChatMode,
-}: {
+type ChatInterfaceProps = {
   messages: Message[];
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
   isLoading: boolean;
@@ -179,14 +158,43 @@ const ChatInterface = ({
   isMobileDialogOpen: boolean;
   setIsMobileDialogOpen: (open: boolean) => void;
   updateChatMode: (mode: ChatMode) => void;
-}) => {
+  handlePaste: (e: React.ClipboardEvent) => void;
+  isUploading: boolean;
+  pastedImageUrl: string | null;
+  setPastedImageUrl: (url: string | null) => void;
+};
+
+const ChatInterface = ({
+  messages,
+  setMessages,
+  isLoading,
+  input,
+  setInput,
+  handleSubmit,
+  messagesEndRef,
+  mode,
+  isCommandOpen,
+  setIsCommandOpen,
+  handleQuickSubmit,
+  isMobile,
+  isMobileDialogOpen,
+  setIsMobileDialogOpen,
+  updateChatMode,
+  handlePaste,
+  isUploading,
+  pastedImageUrl,
+  setPastedImageUrl,
+}: ChatInterfaceProps) => {
   const messageList = Array.isArray(messages) ? messages : [];
 
   const handleEditPrompt = (index: number) => {
     const messageToEdit = messages[index];
     if (messageToEdit.role === 'user') {
-      setInput(messageToEdit.content);
-      // Optionally, remove the message from the list if you want to replace it
+      const content = Array.isArray(messageToEdit.content) 
+        ? messageToEdit.content.find(c => c.type === 'text')?.text || ''
+        : messageToEdit.content;
+      
+      setInput(content);
       setMessages(prev => prev.filter((_, i) => i !== index));
     }
   };
@@ -225,7 +233,15 @@ const ChatInterface = ({
                   <CardContent className="p-2 sm:p-3 text-base break-words">
                     <div className="prose prose-sm dark:prose-invert max-w-none">
                       {message.role === 'user' ? (
-                        <>{message.content}</>
+                        Array.isArray(message.content) ? (
+                          message.content.map((content, i) => (
+                            content.type === 'text' ? content.text : 
+                            content.type === 'image_url' ? <img key={i} src={content.image_url?.url} alt="Uploaded" /> : 
+                            null
+                          ))
+                        ) : (
+                          <>{message.content}</>
+                        )
                       ) : (
                         <ReactMarkdown
                           remarkPlugins={[remarkGfm]}
@@ -321,7 +337,7 @@ const ChatInterface = ({
                             ),
                           }}
                         >
-                          {message.content}
+                          {typeof message.content === 'string' ? message.content : ''}
                         </ReactMarkdown>
                       )}
                     </div>
@@ -352,27 +368,47 @@ const ChatInterface = ({
               <ModeSelector mode={mode} updateChatMode={updateChatMode} />
             </div>
 
-            <form onSubmit={handleSubmit} className="relative flex items-center gap-2 bg-input rounded-md focus-within:ring-1 focus-within:ring-ring">
-              <Input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Type a message..."
-                className="flex-1 text-base border-0 focus-visible:ring-0 focus-visible:ring-offset-0 min-h-[44px] focus-within:ring-blue-500/20"
-                disabled={isLoading}
-                autoComplete="off"
-                autoCorrect="off"
-                autoCapitalize="off"
-                spellCheck="false"
-              />
-              <Button
-                type="submit"
-                size="icon"
-                disabled={isLoading}
-                className="absolute right-1 top-1 bottom-1 h-auto hover:bg-blue-500/10 bg-blue-500/20 text-blue-500/80 hover:text-blue-500"
-              >
-                <Send className="h-3 w-3 sm:h-4 sm:w-4" />
-              </Button>
-            </form>
+            <div className="relative flex flex-col gap-2">
+              {pastedImageUrl && (
+                <div className="relative w-20 h-20 rounded-md overflow-hidden">
+                  <img 
+                    src={pastedImageUrl} 
+                    alt="Pasted" 
+                    className="w-full h-full object-cover"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-1 right-1 h-6 w-6 bg-background/80 hover:bg-background"
+                    onClick={() => setPastedImageUrl(null)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+              <form onSubmit={handleSubmit} className="relative flex items-center gap-2 bg-input rounded-md focus-within:ring-1 focus-within:ring-ring">
+                <Input
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onPaste={handlePaste}
+                  placeholder={pastedImageUrl ? "Ask about the image..." : "Type a message..."}
+                  className="flex-1 text-base border-0 focus-visible:ring-0 focus-visible:ring-offset-0 min-h-[44px] focus-within:ring-blue-500/20"
+                  disabled={isLoading || isUploading}
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  spellCheck="false"
+                />
+                <Button
+                  type="submit"
+                  size="icon"
+                  disabled={isLoading || !input.trim()}
+                  className="absolute right-1 top-1 bottom-1 h-auto hover:bg-blue-500/10 bg-blue-500/20 text-blue-500/80 hover:text-blue-500"
+                >
+                  <Send className="h-3 w-3 sm:h-4 sm:w-4" />
+                </Button>
+              </form>
+            </div>
 
             <p className="text-base text-center text-muted-foreground hidden sm:block">
               Powered by GhostAI via Groq, Made with ❤️ by <a href="https://github.com/The-UnknownHacker" className="text-blue-500 hover:underline">The-UnknownHacker</a>
@@ -720,6 +756,8 @@ export default function Home() {
   const { user } = useAuth();
   const router = useRouter();
   const [isMobileDialogOpen, setIsMobileDialogOpen] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [pastedImageUrl, setPastedImageUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -757,9 +795,9 @@ export default function Home() {
     if (newMode) {
       setMode(newMode);
     }
-    setInput('');
+    setInput(text);
     const fakeEvent = { preventDefault: () => { } } as React.FormEvent;
-    await handleSubmit(fakeEvent, text);
+    await handleSubmit(fakeEvent);
   };
 
   const loadChatHistories = async () => {
@@ -931,42 +969,62 @@ export default function Home() {
     }
   }, [user]);
 
-  async function handleSubmit(e: React.FormEvent, submittedText?: string) {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const textToSubmit = submittedText || input;
-    if (!textToSubmit.trim()) return;
+    if (isLoading || !input.trim()) return;
 
-    const newMessage = { role: 'user' as const, content: textToSubmit };
-    setMessages(prev => [...prev, newMessage]);
+    let messageContent: MessageContent;
+    let currentMessages = [...messages]; // Store current messages
+
+    if (pastedImageUrl) {
+      // Check if there's already an image in the chat
+      const hasExistingImage = messages.some(msg => 
+        Array.isArray(msg.content) && 
+        msg.content.some(content => content.type === 'image_url')
+      );
+
+      // If there's an existing image, reset both UI and API messages
+      if (hasExistingImage) {
+        setMessages([]);
+        currentMessages = []; // Reset messages for API call
+        setSelectedChatId(null);
+      }
+
+      messageContent = [
+        {
+          type: 'text',
+          text: input
+        },
+        {
+          type: 'image_url',
+          image_url: {
+            url: pastedImageUrl
+          }
+        }
+      ];
+      setPastedImageUrl(null);
+    } else {
+      messageContent = input;
+    }
+
+    const userMessage = { role: 'user' as const, content: messageContent };
+    setMessages(prev => [...prev, userMessage]);
+    
     setInput('');
     setIsLoading(true);
 
     try {
-      // If mode is 'image', use the image generation prompt
-      const systemPrompt = mode === 'image' ? 
-        `
-        You are an AI image generation assistant. Your role is to help create images using pollinations.ai.\n\nTo generate an image, create a markdown image link in this format:\n\n![Image](https://image.pollinations.ai/prompt/{description}?width=1024&height=1024&nologo=poll&nofeed=yes&model=Flux&seed={random})\n\nWhere:\n- {description} is the image description (URL encoded)\n- {random} is a random 5-digit number\n\nExample response format:\nHere's your generated image:\n\n![Image](https://image.pollinations.ai/prompt/beautiful%20sunset%20over%20mountains?width=1024&height=1024&nologo=poll&nofeed=yes&model=Flux&seed=12345)\n\nAlways generate 2 variations of each image with different random seeds.\nKeep descriptions clear and detailed but not too long.\nURL encode all descriptions.\nAfter generating images, add: \"If you'd like different variations, just ask!\"\n\n
-        `
-        : undefined;
-
       const response = await fetch('/api/groq', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: [...messages, newMessage],
+          messages: [...currentMessages, userMessage], // Use currentMessages instead of messages
           mode,
-          systemPrompt
         }),
       });
 
-      if (!response.ok) {
-        toast.error(`HTTP error! status: ${response.status}`);
-        return;
-      }
-
-      if (!response.body) {
-        toast.error('Response body is null');
-        return;
+      if (!response.ok || !response.body) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
@@ -983,16 +1041,13 @@ export default function Home() {
         fullResponse += chunk;
         setMessages(prev => [
           ...prev.slice(0, -1),
-          {
-            role: 'assistant',
-            content: prev[prev.length - 1].content + chunk
-          }
+          { role: 'assistant', content: prev[prev.length - 1].content + chunk }
         ]);
       }
 
       const updatedMessages: Message[] = [
         ...messages,
-        newMessage,
+        { role: 'user', content: messageContent },
         { role: 'assistant', content: fullResponse }
       ];
 
@@ -1015,7 +1070,10 @@ export default function Home() {
           toast.error('Failed to update chat history');
         }
       } else {
-        const title = newMessage.content.slice(0, 50) + (newMessage.content.length > 50 ? '...' : '');
+        const title = Array.isArray(messageContent) 
+          ? messageContent.find(c => c.type === 'text')?.text?.slice(0, 50) + '...'
+          : messageContent.slice(0, 50) + (messageContent.length > 50 ? '...' : '');
+
         const { data, error: insertError } = await supabase
           .from('chat_histories')
           .insert([
@@ -1048,7 +1106,7 @@ export default function Home() {
     } finally {
       setIsLoading(false);
     }
-  }
+  };
 
   const updateChatMode = async (newMode: ChatMode) => {
     setMode(newMode);
@@ -1085,6 +1143,40 @@ export default function Home() {
     }
     router.push('/auth');
   };
+
+  const handlePaste = useCallback(async (e: React.ClipboardEvent) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    const imageItem = Array.from(items).find(item => item.type.startsWith('image/'));
+    if (!imageItem) return;
+
+    e.preventDefault();
+    setIsUploading(true);
+
+    try {
+      const file = imageItem.getAsFile();
+      if (!file) return;
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error('Upload failed');
+      
+      const { url } = await response.json();
+      setPastedImageUrl(url); // Store the image URL
+    } catch (error) {
+      console.error('Paste error:', error);
+      toast.error('Failed to upload pasted image');
+    } finally {
+      setIsUploading(false);
+    }
+  }, []);
 
   return (
     <div className="flex h-[100dvh] overflow-hidden">
@@ -1344,6 +1436,10 @@ export default function Home() {
             isMobileDialogOpen={isMobileDialogOpen}
             setIsMobileDialogOpen={setIsMobileDialogOpen}
             updateChatMode={updateChatMode}
+            handlePaste={handlePaste}
+            isUploading={isUploading}
+            pastedImageUrl={pastedImageUrl}
+            setPastedImageUrl={setPastedImageUrl}
           />
         </div>
       </div>
