@@ -1,7 +1,7 @@
 export type ChatMode = 'software' | 'notetaking' | 'research' | 'general' | 'image';
 
 export type Message = {
-  role: 'user' | 'assistant';
+  role: 'user' | 'assistant' | 'system';
   content: string | {
     type: "text" | "image_url";
     text?: string;

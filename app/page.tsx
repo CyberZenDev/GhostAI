@@ -683,60 +683,58 @@ const ModeSelector = ({ mode, updateChatMode }: { mode: ChatMode, updateChatMode
         className="h-8"
       >
         <div className="flex items-center gap-2">
-          <div className={`w-2 h-2 rounded-full ${
-            mode === 'software' ? 'bg-blue-500' :
-            mode === 'notetaking' ? 'bg-green-500' :
-            mode === 'research' ? 'bg-purple-500' :
-            mode === 'image' ? 'bg-pink-500' :
-            'bg-gray-400'
-          }`} />
-          <span className="text-xs">
-            {mode === 'software' ? 'Tech' :
-             mode === 'notetaking' ? 'Notes' :
-             mode === 'research' ? 'Research' :
-             mode === 'image' ? 'Image' :
-             'General'}
-          </span>
+          <div className={`w-2 h-2 rounded-full ${getModeColor(mode)}`} />
+          <span className="text-xs capitalize">{mode}</span>
         </div>
       </Button>
     </DropdownMenuTrigger>
-    <DropdownMenuContent
-      align="end"
-      className="w-[200px] animate-in fade-in-0 zoom-in-95"
-    >
-      <DropdownMenuItem onClick={() => updateChatMode('general')}>
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-gray-400"></div>
-          General Chat
-        </div>
-      </DropdownMenuItem>
-      <DropdownMenuItem onClick={() => updateChatMode('software')}>
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-          Technical Interview
-        </div>
-      </DropdownMenuItem>
-      <DropdownMenuItem onClick={() => updateChatMode('notetaking')}>
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-green-500"></div>
-          Note Taking
-        </div>
-      </DropdownMenuItem>
-      <DropdownMenuItem onClick={() => updateChatMode('research')}>
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-purple-500"></div>
-          Research
-        </div>
-      </DropdownMenuItem>
-      <DropdownMenuItem onClick={() => updateChatMode('image')}>
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-pink-500"></div>
-          Image Generation
-        </div>
-      </DropdownMenuItem>
+    <DropdownMenuContent align="end">
+      {(['general', 'software', 'notetaking', 'research', 'image'] as ChatMode[]).map((m) => (
+        <DropdownMenuItem 
+          key={m} 
+          onClick={() => updateChatMode(m)}
+          className={mode === m ? 'bg-accent' : ''}
+        >
+          <div className="flex items-center gap-2">
+            <div className={`w-2 h-2 rounded-full ${getModeColor(m)}`} />
+            {m.charAt(0).toUpperCase() + m.slice(1)}
+          </div>
+        </DropdownMenuItem>
+      ))}
     </DropdownMenuContent>
   </DropdownMenu>
 );
+
+// Add this at the top level, before the components
+const MODE_PREPROMPTS: Record<ChatMode, string> = {
+  general: "You are a helpful AI assistant.",
+  software: "You are a technical expert. Provide detailed, accurate technical explanations and code examples when relevant.",
+  notetaking: "You are a note-taking assistant. Help organize and structure information clearly and concisely.",
+  research: "You are a research assistant. Help analyze information, find connections, and provide well-structured insights.",
+  image: `You are an AI image generation assistant. Your role is to help create images using pollinations.ai.
+
+To generate an image, create a markdown image link in this format:
+
+![Image](https://image.pollinations.ai/prompt/{description}?width=1024&height=1024&nologo=poll&nofeed=yes&model=Flux&seed={random})
+
+Where:
+- {description} is the image description (URL encoded)
+- {width} and {height} are image dimensions (default: 1024)
+- {random} is a random number for variations
+
+Example response format:
+Here's your generated image based on your request:
+
+![Image](https://image.pollinations.ai/prompt/beautiful%20sunset%20over%20mountains?width=1024&height=1024&nologo=poll&nofeed=yes&model=Flux&seed=12345)
+
+![Image](https://image.pollinations.ai/prompt/beautiful%20sunset%20over%20mountains?width=1024&height=1024&nologo=poll&nofeed=yes&model=Flux&seed=54321)
+
+Always generate 2 variations of each image using different seed numbers.
+Keep descriptions clear and detailed but not too long.
+Make sure to URL encode the descriptions.
+After generating images, add: "If you'd like different variations, just ask!"
+`
+};
 
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -973,44 +971,26 @@ export default function Home() {
     e.preventDefault();
     if (isLoading || !input.trim()) return;
 
-    let messageContent: MessageContent;
-    let currentMessages = [...messages]; // Store current messages
-
-    if (pastedImageUrl) {
-      // Check if there's already an image in the chat
-      const hasExistingImage = messages.some(msg => 
-        Array.isArray(msg.content) && 
-        msg.content.some(content => content.type === 'image_url')
-      );
-
-      // If there's an existing image, reset both UI and API messages
-      if (hasExistingImage) {
-        setMessages([]);
-        currentMessages = []; // Reset messages for API call
-        setSelectedChatId(null);
-      }
-
-      messageContent = [
+    // Create the message content based on whether there's a pasted image
+    const newMessage = {
+      role: 'user' as const,
+      content: pastedImageUrl ? [
         {
-          type: 'text',
-          text: input
-        },
-        {
-          type: 'image_url',
+          type: "image_url" as const,
           image_url: {
             url: pastedImageUrl
           }
+        },
+        {
+          type: "text" as const,
+          text: input
         }
-      ];
-      setPastedImageUrl(null);
-    } else {
-      messageContent = input;
-    }
+      ] : input
+    };
 
-    const userMessage = { role: 'user' as const, content: messageContent };
-    setMessages(prev => [...prev, userMessage]);
-    
+    setMessages(prev => [...prev, newMessage]);
     setInput('');
+    setPastedImageUrl(null);
     setIsLoading(true);
 
     try {
@@ -1018,7 +998,9 @@ export default function Home() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: [...currentMessages, userMessage], // Use currentMessages instead of messages
+          messages: pastedImageUrl ? 
+            [...messages, newMessage] : // Don't include preprompt for image messages
+            [{ role: 'system', content: MODE_PREPROMPTS[mode] }, ...messages, newMessage],
           mode,
         }),
       });
@@ -1047,7 +1029,7 @@ export default function Home() {
 
       const updatedMessages: Message[] = [
         ...messages,
-        { role: 'user', content: messageContent },
+        { role: 'user', content: input },
         { role: 'assistant', content: fullResponse }
       ];
 
@@ -1070,9 +1052,9 @@ export default function Home() {
           toast.error('Failed to update chat history');
         }
       } else {
-        const title = Array.isArray(messageContent) 
-          ? messageContent.find(c => c.type === 'text')?.text?.slice(0, 50) + '...'
-          : messageContent.slice(0, 50) + (messageContent.length > 50 ? '...' : '');
+        const title = Array.isArray(input) 
+          ? input.find(c => c.type === 'text')?.text?.slice(0, 50) + '...'
+          : input.slice(0, 50) + (input.length > 50 ? '...' : '');
 
         const { data, error: insertError } = await supabase
           .from('chat_histories')
@@ -1109,30 +1091,29 @@ export default function Home() {
   };
 
   const updateChatMode = async (newMode: ChatMode) => {
+    // Always update the UI mode immediately
     setMode(newMode);
 
-    if (!selectedChatId) {
-      return;
+    // If there's a selected chat, update it in the database
+    if (selectedChatId) {
+      console.log('updating chat mode to', newMode);
+
+      const { error } = await supabase
+        .from('chat_histories')
+        .update({
+          mode: newMode,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', selectedChatId);
+
+      if (error) {
+        console.error('Error updating chat mode:', error);
+        toast.error('Failed to update chat mode');
+        return;
+      }
+
+      await loadChatHistories();
     }
-
-    console.log('updating chat mode to', newMode);
-
-    const { error } = await supabase
-      .from('chat_histories')
-      .update({
-        mode: newMode,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', selectedChatId);
-
-    if (error) {
-      console.error('Error updating chat mode:', error);
-      toast.error('Failed to update chat mode');
-      setMode(mode);
-      return;
-    }
-
-    await loadChatHistories();
   };
 
   const handleLogout = async () => {
